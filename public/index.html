@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw&Talk</title>
+
+    <link rel="stylesheet" href="./style.css">
+    <script src="./main.js" defer></script>
+</head>
+<body>
+    <section class="container">
+        <div id="toolbar">
+            <h1>Draw&Talk</h1>
+            <label for="stroke">Color</label>
+            <input type="color" name="stroke" id="stroke">
+            <label for="lineWidth">Line width</label>
+            <input type="range" name="lineWidth" id="lineWidth" min="1" max="10" value="5">
+            <button id="clear">Clear canvas</button>
+        </div>
+
+        <div class="drawing-board">
+            <canvas id="drawing-board"></canvas>
+        </div>
+    </section>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+</body>
+</html>
