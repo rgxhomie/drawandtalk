@@ -29,7 +29,6 @@ socket.on('connect', () => {
 });
 
 socket.on('canvasState', (data) => {
-    console.log(data);
     data.guests.forEach((id) => cursors.push(new Cursor(id)));
     for(let i = 0; i < data.canvasState.length; i++) {
         const line = data.canvasState[i];
