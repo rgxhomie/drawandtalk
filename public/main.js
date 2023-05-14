@@ -2,10 +2,10 @@ const canvas = document.getElementById('drawing-board');
 const colorInput = document.getElementById('stroke');
 const sliderInput = document.getElementById('lineWidth');
 const toolbar = document.getElementById('toolbar');
-const clearButton = document.getElementById('clear');
 const ctx = canvas.getContext('2d');
 const canvasOffsetX = canvas.offsetLeft;
 const canvasOffsetY = canvas.offsetTop;
+const guestId = Math.random() * 1000;
 
 canvas.width = window.innerWidth - canvasOffsetX;
 canvas.height = window.innerHeight - canvasOffsetY;
@@ -18,14 +18,21 @@ let startX;
 let startY;
 
 const socket = io();
+socket.emit('guestConnect', {id: guestId});
+
+const cursors = [];
+const userCursor = new Cursor(guestId);
+cursors.push(userCursor);
 
 socket.on('connect', () => {
     console.log('Connected to server...');
 });
 
 socket.on('canvasState', (data) => {
-    for(let i = 0; i < data.length; i++) {
-        const line = data[i];
+    console.log(data);
+    data.guests.forEach((id) => cursors.push(new Cursor(id)));
+    for(let i = 0; i < data.canvasState.length; i++) {
+        const line = data.canvasState[i];
         ctx.beginPath();
         ctx.moveTo(line.x1, line.y1);
         ctx.lineTo(line.x2, line.y2);
@@ -37,6 +44,17 @@ socket.on('canvasState', (data) => {
         ctx.strokeStyle = color;
         ctx.lineWidth = lineWidth;
     }
+});
+
+socket.on('guestConnect', (data) => {
+    console.log(`Guest connected`);
+    cursors.push(new Cursor(data.id));
+})
+
+socket.on('cursorMove', (data) => {
+    const {x, y, clientLineWidth, clientColor, id} = data;
+    movedCursor = cursors.find((el) => el.id == id);
+    movedCursor.move(x, y, clientLineWidth, clientColor);
 });
 
 socket.on('draw', (data) => {
@@ -89,23 +107,40 @@ document.addEventListener('mouseup', e => {
 });
 
 canvas.addEventListener('mousemove', e => {
-    if (!isPainting) return;
+    userCursor.move(e.clientX, e.clientY, lineWidth, color);
+    socket.emit('cursorMove', {
+        x: e.clientX,
+        y: e.clientY,
+        clientLineWidth: lineWidth,
+        clientColor: color,
+        id: guestId
+    });
 
-    ctx.lineWidth = lineWidth;
-    ctx.lineCap = 'round';
-    ctx.lineTo(e.offsetX, e.offsetY);
-    ctx.stroke();
+    if (isPainting) {
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = 'round';
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
 
-    const data = {
-        x1: startX,
-        y1: startY,
-        x2: e.offsetX,
-        y2: e.offsetY,
-        color: ctx.strokeStyle,
-        lineWidth: lineWidth
+        const drawData = {
+            x1: startX,
+            y1: startY,
+            x2: e.offsetX,
+            y2: e.offsetY,
+            color: ctx.strokeStyle,
+            lineWidth: lineWidth
+        }
+        socket.emit('draw', drawData);
     }
-    socket.emit('draw', data);
 
     startX = e.offsetX;
     startY = e.offsetY;
+});
+
+canvas.addEventListener('mouseover', (e) => {
+    userCursor.show();
+});
+
+canvas.addEventListener('mouseout', (e) => {
+    userCursor.hide();
 });

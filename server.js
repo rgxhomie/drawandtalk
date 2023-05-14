@@ -7,23 +7,48 @@ app.use(express.static('public'));
 
 const maxCanvasState = 1_000_000;
 let canvasState = [];
+let guests = [];
 
 io.on('connection', (socket) => {
-    console.log('A user has connected');
-    socket.emit('canvasState', canvasState);
+    socket.emit('canvasState', {canvasState, guests});
+
+    socket.on('guestConnect', (data) => {
+        try {
+            console.log('guestConnect', data);
+            guests.push(data.id);
+            socket.broadcast.emit('guestConnect', data);
+        } catch (error) {
+            console.log(error);
+        }
+    });
+
+    socket.on('cursorMove', (data) => {
+        try {
+            socket.broadcast.emit('cursorMove', data);
+        } catch (error) {
+            console.log(error);
+        }
+    });
 
     socket.on('draw', (data) => {
-        console.log(`Incoming draw event`, data);
-        canvasState.push(data);
-        if(canvasState.length > maxCanvasState) canvasState.shift();
-        socket.broadcast.emit('draw', data);
+        try {
+            canvasState.push(data);
+            if(canvasState.length > maxCanvasState) canvasState.shift();
+            socket.broadcast.emit('draw', data);
+        } catch (error) {
+            console.log(error);
+        }
     });
 
     socket.on('clearCanvas', (data) => {
-        console.log('Clearing canvas...');
-        canvasState = [];
-        socket.broadcast.emit('clearCanvas', data);
-    })
+        try {
+            console.log('Clearing canvas...');
+            canvasState = [];
+            socket.broadcast.emit('clearCanvas', data);
+        } catch (error) {
+            console.log(error);
+        }
+    });
 });
 
 

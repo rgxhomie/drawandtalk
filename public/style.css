@@ -50,3 +50,17 @@ h1 {
     color: white;
     padding: 2px;
 }
+
+.custom-cursor {
+    border-radius: 100%;
+    border: 1px solid#202020;
+    opacity: .3;
+    position: fixed;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: width .3s, height .3s, opacity .3s;
+}
+
+canvas {
+    cursor: none;
+}
