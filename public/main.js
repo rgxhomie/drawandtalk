@@ -13,6 +13,7 @@ canvas.height = window.innerHeight - canvasOffsetY;
 let isPainting = false;
 let color = colorInput.value;
 let lineWidth = sliderInput.value;
+let skipEmit = false;
 
 let startX;
 let startY;
@@ -107,13 +108,6 @@ document.addEventListener('mouseup', e => {
 
 canvas.addEventListener('mousemove', e => {
     userCursor.move(e.clientX, e.clientY, lineWidth, color);
-    socket.emit('cursorMove', {
-        x: e.clientX,
-        y: e.clientY,
-        clientLineWidth: lineWidth,
-        clientColor: color,
-        id: guestId
-    });
 
     if (isPainting) {
         ctx.lineWidth = lineWidth;
@@ -130,6 +124,19 @@ canvas.addEventListener('mousemove', e => {
             lineWidth: lineWidth
         }
         socket.emit('draw', drawData);
+    } else {
+        if(!skipEmit) {
+            socket.emit('cursorMove', {
+                x: e.clientX,
+                y: e.clientY,
+                clientLineWidth: lineWidth,
+                clientColor: color,
+                id: guestId
+            });
+            skipEmit = true;
+        } else {
+            skipEmit = false;
+        }
     }
 
     startX = e.offsetX;
