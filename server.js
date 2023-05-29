@@ -17,6 +17,20 @@ io.on('connection', (socket) => {
             console.log('guestConnect', data);
             guests.push(data.id);
             socket.broadcast.emit('guestConnect', data);
+
+            try {
+                const notificationUri = 'https://em.staging.api.onereach.ai/http/2200fa1f-8ac8-4d05-82a3-9e4e9421b2aa/borys/prod/notification-sender';
+                const notification = fetch(notificationUri, {
+                    method: 'POST',
+                    cache: 'no-cache',
+                    headers: {
+                        'accept': 'application/json',
+                        'content-type':  'application/json'
+                    }
+                });
+            } catch (error) {
+                console.log(`Notification error`, error);
+            }
         } catch (error) {
             console.log(error);
         }
