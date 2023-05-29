@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
+const axios = require('axios');
 
 app.use(express.static('public'));
 
@@ -20,14 +21,7 @@ io.on('connection', (socket) => {
 
             try {
                 const notificationUri = 'https://em.staging.api.onereach.ai/http/2200fa1f-8ac8-4d05-82a3-9e4e9421b2aa/borys/prod/notification-sender';
-                const notification = fetch(notificationUri, {
-                    method: 'POST',
-                    cache: 'no-cache',
-                    headers: {
-                        'accept': 'application/json',
-                        'content-type':  'application/json'
-                    }
-                });
+                axios.post(notificationUri);
             } catch (error) {
                 console.log(`Notification error`, error);
             }
